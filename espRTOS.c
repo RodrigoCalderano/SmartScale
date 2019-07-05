@@ -28,19 +28,70 @@
 #define WEB_PORT "80"
 #define WEB_PATH "/update?api_key="
 
+int data_fix(int dado)
+{	
+	switch(dado){
+    	case 48:
+    		dado = 0;
+    		break;
+    	case 49:
+    		dado = 1;
+    		break;
+    	case 50:
+    		dado = 2;
+    		break;
+    	case 51:
+    		dado = 3;
+    		break;
+    	case 52:
+    		dado = 4;
+    		break;
+    	case 53:
+    		dado = 5;
+    		break;
+    	case 54:
+    		dado = 6;
+    		break;
+    	case 55:
+    		dado = 7;
+    		break;
+    	case 56:
+    		dado = 8;
+    		break;
+    	case 57:
+    		dado = 9;
+    		break;
+   	}
+	return dado;
+}
+
+
 void http_get_task(void *pvParameters)
 {
-	 
-	int successes = 0, failures = 0;
+     
+    int successes = 0, failures = 0;
     printf("HTTP get task starting...\r\n");
 
-	
     while(1) {
- 
+        int dado1 = uart_getc(0);
+      	dado1 = data_fix(dado1);
+
+      	int dado2 = uart_getc(0);
+      	dado2 = data_fix(dado2);
+
+      	int dado3 = uart_getc(0);
+      	dado3 = data_fix(dado3);
+
+      	int dado4 = uart_getc(0);
+      	dado4 = data_fix(dado4);
+
+        int dado = dado1*1000 + dado2*100 + dado3*10 + dado4*1;
+        
         const struct addrinfo hints = {
             .ai_family = AF_UNSPEC,
             .ai_socktype = SOCK_STREAM,
         };
+
         struct addrinfo *res;
 
         printf("Running DNS lookup for %s...\r\n", WEB_SERVER);
@@ -50,8 +101,8 @@ void http_get_task(void *pvParameters)
             printf("DNS lookup failed err=%d res=%p\r\n", err, res);
             if(res)
             freeaddrinfo(res);
-			failures++;
-			continue;
+            failures++;
+            continue;
         }
 
 #if LWIP_IPV6
@@ -81,7 +132,7 @@ void http_get_task(void *pvParameters)
             printf("... Failed to allocate socket.\r\n");
             freeaddrinfo(res);
            failures++;
-			continue;
+            continue;
         }
 
         printf("... allocated socket\r\n");
@@ -90,43 +141,41 @@ void http_get_task(void *pvParameters)
             close(s);
             freeaddrinfo(res);
             printf("... socket connect failed.\r\n");
-			failures++;
-			continue;
+            failures++;
+            continue;
         }
 
         printf("... connected\r\n");
         freeaddrinfo(res);
-		
-		char temp2[10];
-		snprintf(temp2, sizeof(temp2),"%2.2f", 366666.00);
-		printf("%s \n",temp2);
-		printf(temp2);
-		
-		char hum1[6];
-		snprintf(hum1,sizeof(hum1), "%2.2f", 666.6666 );
-		printf("%s \n",hum1 );
-		
-
-		char req[300]="GET " WEB_PATH API_KEY "&" FIELD1;
-		strncat(req,temp2,10);
-		 strncat(req,"&",2);
-		 strncat(req,FIELD2,20);
-		 strncat(req,hum1,6);
-		 strncat(req," HTTP/1.1\r\nHost: "WEB_SERVER"\r\nUser-Agent: esp-open-rtos/0.1 esp8266\r\nConnection: close\r\n\r\n",250);
-		
-		
-		printf("%s \n",req );
-		
-
-	
         
-		 printf("%s \n",req );
-		
-		if (write(s, req, strlen(req)) < 0) {
+        char temp2[10];
+        snprintf(temp2, sizeof(temp2),"%d", dado);
+        printf("%s \n",temp2);
+        printf(temp2);
+        
+        char hum1[6];
+        snprintf(hum1,sizeof(hum1), "%2.2f", 666.6666 );
+        printf("%s \n",hum1 );
+        
+
+        char req[300]="GET " WEB_PATH API_KEY "&" FIELD1;
+        strncat(req,temp2,10);
+        strncat(req,"&",2);
+        strncat(req,FIELD2,20);
+        strncat(req,hum1,6);
+        strncat(req," HTTP/1.1\r\nHost: "WEB_SERVER"\r\nUser-Agent: esp-open-rtos/0.1 esp8266\r\nConnection: close\r\n\r\n",250);
+        
+        
+        printf("%s \n",req );
+        
+        
+         printf("%s \n",req );
+        
+        if (write(s, req, strlen(req)) < 0) {
             printf("... socket send failed\r\n");
             close(s);
             failures++;
-			continue;
+            continue;
         }
         printf("... socket send success\r\n");
 
@@ -142,16 +191,16 @@ void http_get_task(void *pvParameters)
 
         printf("... done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
         close(s);
-		printf("successes = %d failures = %d\r\n", successes, failures);		
+        printf("successes = %d failures = %d\r\n", successes, failures);        
         printf("\r\nEnding!\r\n");
-		vTaskDelay(3000);
-		continue;
+        vTaskDelay(100);
+        continue;
     }
 }
 
 void user_init(void)
 {
-    uart_set_baud(0, 115200);
+    uart_set_baud(0, 9600);
     printf("SDK version:%s\n", sdk_system_get_sdk_version());
 
     struct sdk_station_config config = {

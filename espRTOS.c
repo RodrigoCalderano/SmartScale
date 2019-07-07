@@ -7,6 +7,7 @@
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
 
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
@@ -18,6 +19,7 @@
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
+#include "esp8266.h"
 
 #include "ssid_config.h"
 
@@ -28,64 +30,101 @@
 #define WEB_PORT "80"
 #define WEB_PATH "/update?api_key="
 
+
+const int gpio = 15;
+
+
 int data_fix(int dado)
-{	
-	switch(dado){
-    	case 48:
-    		dado = 0;
-    		break;
-    	case 49:
-    		dado = 1;
-    		break;
-    	case 50:
-    		dado = 2;
-    		break;
-    	case 51:
-    		dado = 3;
-    		break;
-    	case 52:
-    		dado = 4;
-    		break;
-    	case 53:
-    		dado = 5;
-    		break;
-    	case 54:
-    		dado = 6;
-    		break;
-    	case 55:
-    		dado = 7;
-    		break;
-    	case 56:
-    		dado = 8;
-    		break;
-    	case 57:
-    		dado = 9;
-    		break;
-   	}
-	return dado;
+{   
+    switch(dado){
+        case 48:
+            dado = 0;
+            break;
+        case 49:
+            dado = 1;
+            break;
+        case 50:
+            dado = 2;
+            break;
+        case 51:
+            dado = 3;
+            break;
+        case 52:
+            dado = 4;
+            break;
+        case 53:
+            dado = 5;
+            break;
+        case 54:
+            dado = 6;
+            break;
+        case 55:
+            dado = 7;
+            break;
+        case 56:
+            dado = 8;
+            break;
+        case 57:
+            dado = 9;
+            break;
+    }
+    return dado;
 }
 
 
 void http_get_task(void *pvParameters)
 {
      
+
+    gpio_enable(gpio, GPIO_OUTPUT);
+    
+
     int successes = 0, failures = 0;
     printf("HTTP get task starting...\r\n");
 
     while(1) {
-        int dado1 = uart_getc(0);
-      	dado1 = data_fix(dado1);
 
-      	int dado2 = uart_getc(0);
-      	dado2 = data_fix(dado2);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-      	int dado3 = uart_getc(0);
-      	dado3 = data_fix(dado3);
+        uart_clear_rxfifo(0);
+        uart_flush_rxfifo(0);
 
-      	int dado4 = uart_getc(0);
-      	dado4 = data_fix(dado4);
+        gpio_write(gpio, 1);  // FAZ REQUISICAO
 
-        int dado = dado1*1000 + dado2*100 + dado3*10 + dado4*1;
+        int dado1_gas = uart_getc(0);  // PEGA OS DADOS DO SENSOR DE GAS
+
+        int dado2_gas = uart_getc(0);
+
+        int dado3_gas = uart_getc(0);
+
+        int dado4_gas = uart_getc(0);
+
+        int dado1_peso = uart_getc(0);  // PEGA OS DADOS DO 'SENSOR' DE PESO
+
+        int dado2_peso = uart_getc(0);
+
+        int dado3_peso = uart_getc(0);
+
+        int dado4_peso = uart_getc(0);
+
+
+        // FIX DATA
+        dado1_gas = data_fix(dado1_gas);
+        dado2_gas = data_fix(dado2_gas);
+        dado3_gas = data_fix(dado3_gas);
+        dado4_gas = data_fix(dado4_gas);
+        int dado_gas = dado1_gas*1000 + dado2_gas*100 + dado3_gas*10 + dado4_gas*1;
+
+        dado1_peso = data_fix(dado1_peso);
+        dado2_peso = data_fix(dado2_peso);
+        dado3_peso = data_fix(dado3_peso);
+        dado4_peso = data_fix(dado4_peso);
+        int dado_peso = dado1_peso*1000 + dado2_peso*100 + dado3_peso*10 + dado4_peso*1;
+
+
+
+        gpio_write(gpio, 0); // FIM DA REQUISICAO
+
         
         const struct addrinfo hints = {
             .ai_family = AF_UNSPEC,
@@ -148,8 +187,10 @@ void http_get_task(void *pvParameters)
         printf("... connected\r\n");
         freeaddrinfo(res);
         
+        int data = dado_peso * 10000 + dado_gas;
+
         char temp2[10];
-        snprintf(temp2, sizeof(temp2),"%d", dado);
+        snprintf(temp2, sizeof(temp2),"%d", data);
         printf("%s \n",temp2);
         printf(temp2);
         

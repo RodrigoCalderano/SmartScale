@@ -23,8 +23,7 @@ CHAT_ID_RODRIGO = '698900494'
 API_KEY_THINGSPEAK = Constants.API_KEY_THINGSPEAK
 WEB_BASE_URL_THINGSPEAK = 'https://api.thingspeak.com'
 WEB_PATH_THINGSPEAK = '/channels/810599/feeds.json?api_key='
-WEB_PATH_RESULTS_THINGSPEAK = '&results=1'
-
+WEB_PATH_RESULTS_THINGSPEAK = '&results=2'
 
 
 def send_email(email_address, email_subject, email_content, from_email):
@@ -55,6 +54,10 @@ def telegram_warn(message):
 
 
 def get_api_data():
+    entry_file = open("LastEntry.txt", "+r")
+    last_entry = entry_file.readline()
+    entry_file.close()
+
     s = requests.Session()
     s.headers.update({
         'Content-Type': 'application/json'
@@ -66,10 +69,27 @@ def get_api_data():
     print("ThingSpeak request status code: " + str(request.status_code) + "\n" "\n" "\n")
 
     feeds = response['feeds']
+
     for feed in feeds:
-        print(feed)
-        telegram_warn(str(feed))
-        build_email(str(feed))
+
+        if last_entry >= str(feed['entry_id']):
+            print("Nenhuma informação nova")
+            continue
+
+        entry_file = open("LastEntry.txt", "w")
+        entry_file.write(str(feed['entry_id']))
+        entry_file.close()
+
+        peso = int(feed['field1'])
+        gas_sensor = float(feed['field2'])
+        if peso < 15:
+            msg = "Vixi, parece que está quase acabando o gás do seu botijão. O peso dele no momento é: " + str(peso)
+            telegram_warn(msg)
+            build_email(msg)
+        if gas_sensor > 300:
+            msg = "Vixi, parece que está vazando gás. O sensor dele está indicando: " + str(gas_sensor)
+            telegram_warn(msg)
+            build_email(msg)
 
 
 if __name__ == '__main__':
@@ -78,5 +98,11 @@ if __name__ == '__main__':
     print("----------------")
     timeNow = datetime.datetime.now()
     print("Baixando dados: " + str(timeNow))
-    get_api_data()
 
+    # segundos * minutos
+    waitTime = 10 * 1
+    while True:
+        print("Baixando dados")
+        get_api_data()
+        print("Esperando para baixar novamente...")
+        time.sleep(waitTime)

@@ -255,4 +255,3 @@ void user_init(void)
 
     xTaskCreate(&http_get_task, "get_task", 384, NULL, 2, NULL);
 }
-

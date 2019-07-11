@@ -7,22 +7,24 @@ import datetime
 import json
 import sendgrid
 from sendgrid.helpers.mail import Mail, From, To, Subject, PlainTextContent, HtmlContent, SendGridException
+import Constants
 
-# THINGSPEAK
-WEB_BASE_URL_THINGSPEAK = 'https://api.thingspeak.com'
-WEB_PATH_THINGSPEAK = '/channels/810599/feeds.json?api_key='
-API_KEY_THINGSPEAK = '5OGLD1VGIM49ELGP'
-WEB_PATH_RESULTS_THINGSPEAK = '&results=1'
+# SENDGRID
+API_KEY_SENDGRID = Constants.API_KEY_SENDGRID
 
 # TELEGRAM
-API_KEY_TELEGRAM = '894167827:AAGm0LArM6E9QlMwpkWxC-JXbNSHP2nNtg4'
+API_KEY_TELEGRAM = Constants.API_KEY_TELEGRAM
 BASE_URL_TELEGRAM = 'https://api.telegram.org/bot'
 SEND_MESSAGE = "/sendMessage?text="
 CHAT_ID = '&chat_id='
 CHAT_ID_RODRIGO = '698900494'
 
-# SENDGRID
-API_KEY_SENDGRID = "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"
+# THINGSPEAK
+API_KEY_THINGSPEAK = Constants.API_KEY_THINGSPEAK
+WEB_BASE_URL_THINGSPEAK = 'https://api.thingspeak.com'
+WEB_PATH_THINGSPEAK = '/channels/810599/feeds.json?api_key='
+WEB_PATH_RESULTS_THINGSPEAK = '&results=1'
+
 
 
 def send_email(email_address, email_subject, email_content, from_email):

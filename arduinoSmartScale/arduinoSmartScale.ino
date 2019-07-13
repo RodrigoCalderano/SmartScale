@@ -1,3 +1,5 @@
+#include <LiquidCrystal.h>
+
 int pinGasSensor = A0;
 int pinRequest = 3;
 
@@ -8,10 +10,16 @@ int filter = 0;
 int gasAux = 0;
 int request = 0;
 
+LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
+
+
 void setup() {
   Serial.begin(9600);
+  pinMode(8, INPUT_PULLUP);
+  pinMode(9, INPUT_PULLUP);
   pinMode(pinGasSensor, INPUT);
   pinMode(pinRequest, INPUT);
+  lcd.begin(16, 2);
 }
 
 void loop() {
@@ -55,7 +63,28 @@ void loop() {
       }
   }
 
-  // TODO: ADJUST WEIGHT VALUE WITH BUTTONS
   
-  delay(100);
+
+  if (digitalRead(8) == LOW) { // Botão Pressionado;
+    weightValue = weightValue + 1;
+  }
+  if (digitalRead(9) == LOW) { // Botão Pressionado;
+    weightValue = weightValue - 1;
+  }
+
+
+
+  //Limpa a tela
+  lcd.clear();
+  //Posiciona o cursor na coluna 3, linha 0;
+  lcd.setCursor(1, 0);
+  //Envia o texto entre aspas para o LCD
+  lcd.print("Peso: ");
+  lcd.print(weightValue);
+  lcd.setCursor(1, 1);
+  lcd.print("Gas:  ");
+  lcd.print(analogRead(A0));
+  delay(300);
+   
+  
 }

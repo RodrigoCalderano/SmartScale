@@ -83,11 +83,11 @@ def get_api_data():
         peso = int(feed['field1'])
         gas_sensor = float(feed['field2'])
         if peso < 15:
-            msg = "Vixi, parece que está quase acabando o gás do seu botijão. O peso dele no momento é: " + str(peso)
+            msg = "O meu querido, parece que está quase acabando o gás do seu botijão. O peso dele no momento é: " + str(peso)
             telegram_warn(msg)
             build_email(msg)
         if gas_sensor > 300:
-            msg = "Vixi, parece que está vazando gás. O sensor dele está indicando: " + str(gas_sensor)
+            msg = "O meu querido, parece que está vazando gás. O sensor dele está indicando: " + str(gas_sensor)
             telegram_warn(msg)
             build_email(msg)
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     print("Baixando dados: " + str(timeNow))
 
     # segundos * minutos
-    waitTime = 10 * 1
+    waitTime = 5 * 1
     while True:
         print("Baixando dados")
         get_api_data()

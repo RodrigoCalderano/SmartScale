@@ -1,8 +1,5 @@
 # SmartScale
 
+This project was made to weigh a gas cylinder by sending alerts via telgram bot in addition to sounding an alarm if it detects a gas leak
 
-Arduino recebe valor do hx711 e do sensor de gás e envia por i2c
-
-Esp rodando FreeRtos recebe via i2c e manda http request para ThingSpeak
-
-Python recebe via http request do ThingSpeak e manda mensagem no bot telegram
+Hardware used: Arduino Uno, hx711, Esp8266 running RTOS
